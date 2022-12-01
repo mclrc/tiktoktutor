@@ -1,4 +1,5 @@
 import Handler from '@netlify/functions'
+import fetch from 'node-fetch'
 
 
 async function getVidLink(url: string): string {
