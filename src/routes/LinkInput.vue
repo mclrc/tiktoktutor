@@ -1,6 +1,7 @@
 <template>
 	<div id="wrapper">
 		<h1>Title</h1>
+		<p>Paste a TikTok link to get started</p>
 		<div id="input-wrapper">
 			<input type="text" id="link-input" v-model="ttlink" placeholder="tiktok.com/..." />
 			<button id="paste-button" class="material-symbols-outlined" @click="paste">content_paste</button>
@@ -46,10 +47,9 @@ async function paste() {
 </script>
 
 <style scoped lang="scss">
+@import '../styles/vars.scss';
+
 #wrapper {
-	position: fixed;
-	top: 0;
-	left: 0;
 	width: 100%;
 	height: 100%;
 
@@ -109,7 +109,7 @@ button, a {
 
 	&:last-child {
 		color: white;
-		background-color: #BF1326;
+		background-color: $acc-color;
 	}
 
 	&:disabled {
