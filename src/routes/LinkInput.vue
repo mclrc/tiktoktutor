@@ -3,13 +3,14 @@
 		<h1>Title</h1>
 		<p>Paste a TikTok link to get started</p>
 		<div id="input-wrapper">
-			<input type="text" id="link-input" v-model="ttlink" placeholder="tiktok.com/..." />
+			<input type="text" id="link-input" @input="debounce(() => { ttlink = $event.target.value }, 1000)" placeholder="tiktok.com/..." />
 			<button id="paste-button" class="material-symbols-outlined" @click="paste">content_paste</button>
 			<router-link :to="'/' + CDNLink" id="arrow-button" :disabled="CDNLink == ''">
 				<span v-if="!loading" class="material-symbols-outlined">arrow_forward</span>
 				<span v-else class="spinner"></span>
 			</router-link>
 		</div>
+		<p v-if="message != ''" class="error">{{ message }}</p>
 	</div>
 </template>
 
@@ -19,30 +20,56 @@ import { ref, watchEffect } from 'vue'
 const ttlink = ref('')
 const CDNLink = ref('')
 const loading = ref(false)
+const message = ref('')
+
+function createDebounce() {
+	let timout = null
+	return (fn, delay) => {
+		clearTimeout(timout)
+		timout = setTimeout(fn, delay)
+	}
+}
+
+const debounce = createDebounce()
 
 watchEffect(async () => {
 	if (ttlink.value == '')
 		return
 
 	loading.value = true;
+	message.value = ''
 
-	const r = await fetch(`http://localhost:9999/.netlify/functions/cors-bypass/?url=${ttlink.value}`, {
+	const r = await tryGetLink()
+
+	loading.value = false
+	if (!r) {
+		message.value = 'Couldn\'t find video. Are you sure this is a valid TikTok link?' 
+		return
+	}
+	CDNLink.value = await r.text()
+})
+
+async function paste() {
+	ttlink.value = await navigator.clipboard.readText()
+}
+
+// Retry fetching link in case of rate limiting
+async function tryGetLink(depth = 2) {
+	const url = (import.meta.env.DEV ? 'http://localhost:9999/' : '') + `.netlify/functions/cors-bypass/?url=${ttlink.value}`
+	const r = await fetch(url, {
 		method: 'POST',
 	})
 
 	if (r.status != 200) {
 		console.error('failed to fetch CDN link')
-		loading.value = false
-		return
+		if (depth == 1) {
+			return null
+		}
+		else {
+			return await new Promise((res) => setTimeout(() => res(), 3000)).then(() => tryGetLink(depth - 1))
+		}
 	}
-
-	CDNLink.value = await r.text()
-	loading.value = false
-})
-
-async function paste() {
-	ttlink.value = await navigator.clipboard.readText()
-	console.log('called', ttlink.value)
+	return r
 }
 </script>
 
@@ -112,7 +139,7 @@ button, a {
 		background-color: $acc-color;
 	}
 
-	&:disabled {
+	&[disabled="true"] {
 		opacity: .8 !important;
 	}
 }
@@ -144,5 +171,9 @@ button, a {
 	content: "";
 	height: 20px;
 	width: 20px;
+}
+
+p.error {
+	color: #b55;
 }
 </style>

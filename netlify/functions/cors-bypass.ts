@@ -38,7 +38,7 @@ async function getVidLink(url: string): string {
 		"mode": "cors",
 	})
 
-	if (!r.ok) throw new Error('Could not fetch video')
+	if (!r.ok) return console.error(`[ERROR] Request failed: ${r.status}`)
 	
 	const html = await r.text()
 
@@ -69,11 +69,11 @@ const handler: Handler = async (event, _context) => {
 			body: directCdnUrl,
 		}
 	} catch(e) {
-		console.log(`[ERROR] ${e}`)
+		console.error(`[ERROR] ${e}`)
 		return {
 			statusCode: 500,
 			headers: { ...defaultHeaders },
-			body: 'Server Error',
+			body: `Server Error: ${e}`,
 		}
 	}
 }
