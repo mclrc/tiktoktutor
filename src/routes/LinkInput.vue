@@ -55,7 +55,7 @@ async function paste() {
 
 // Retry fetching link in case of rate limiting
 async function tryGetLink(depth = 2) {
-	const url = (import.meta.env.DEV ? 'http://192.168.1.22:9999/' : '') + `.netlify/functions/cors-bypass/?url=${ttlink.value}`
+	const url = (import.meta.env.DEV ? 'http://192.168.1.22:9999/' : '') + `.netlify/functions/cdn-link/?url=${ttlink.value}`
 	const r = await fetch(url, {
 		method: 'POST',
 	})
