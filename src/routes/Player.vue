@@ -1,6 +1,11 @@
 <template>
-	<div id="player-wrapper" @click="segmentCutExpanded = false; playbackSpeedExpanded = false;">
+	<div id="player-wrapper" ref="playerWrapper" @click="segmentCutExpanded = false; playbackSpeedExpanded = false;">
 		<span id="loading">Loading...</span>
+		<div id="top-buttons">
+			<button @click="router.go(-1)" class="material-symbols-outlined ui-btn">arrow_back</button>
+			<button @click="toggleFullscreen" class="material-symbols-outlined ui-btn">
+				{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</button>
+		</div>
 		<div id="toolbar">
 			<div id="sliders" @click="$event.stopPropagation()">
 				<Slider v-if="playbackSpeedExpanded" v-model="playbackSpeed" class="no-connect" :min="0.5" :max="1.5" :step="0.01" :format="{ decimals: 1, suffix: 'x' }" />
@@ -8,31 +13,28 @@
 			</div>
 			<div id="buttons">
 				<div class="toolbar-item">
-					<button @click="router.go(-1)" class="material-symbols-outlined toolbar-button">arrow_back</button>
-				</div>
-				<div class="toolbar-item">
-					<button id="mirror-button" class="material-symbols-outlined toolbar-button"
+					<button id="mirror-button" class="material-symbols-outlined ui-btn"
 						:class="{ active: mirrorVid }" @click="mirrorVid = !mirrorVid">flip</button>
 				</div>
 				<div class="toolbar-item" @click="$event.stopPropagation()">
 					<button id="speed-button"
-						class="material-symbols-outlined toolbar-button"
+						class="material-symbols-outlined ui-btn"
 						:class="{ active: playbackSpeedExpanded }"
 						@click="playbackSpeedExpanded = !playbackSpeedExpanded; segmentCutExpanded = false">speed</button>
 				</div>
 				<div class="toolbar-item" @click="$event.stopPropagation()">
 					<button id="cut-button"
-					class="material-symbols-outlined toolbar-button"
+					class="material-symbols-outlined ui-btn"
 					:class="{ active: segmentCutExpanded }"
 					@click="segmentCutExpanded = !segmentCutExpanded; playbackSpeedExpanded = false;">cut</button>
 				</div>
 				<div class="toolbar-item">
-					<button id="play-pause-button" class="material-symbols-outlined toolbar-button"
+					<button id="play-pause-button" class="material-symbols-outlined ui-btn"
 						@click="isPlaying = !isPlaying">{{ isPlaying ? 'pause' : 'play_arrow' }}</button>
 				</div>
 			</div>
 		</div>
-		<video id="player" ref="player"
+		<video id="player" ref="player" playsinline
 			v-if="route.params.url != ''" :src="route.params.url"
 			:class="{ mirrored: mirrorVid }" @loadedmetadata="vidLength = $event.target.duration" loop :playbackRate="playbackSpeed"
 			preload="auto" />
@@ -40,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed, watchEffect } from 'vue'
+import { ref, watch, onMounted, computed, watchEffect, defineExpose } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Slider from '@vueform/slider'
 import '@vueform/slider/themes/default.css'
@@ -55,34 +57,62 @@ const playbackSpeedExpanded = ref(false)
 const segmentCutExpanded = ref(false)
 const vidLength = ref(60)
 const isPlaying = ref(false)
+const isFullscreen = ref(false)
 
 const segmentAbsolute = ref([0, 10000000])
 
 watch(isPlaying, (to, from) => {
-	if (to) player.play()
-	else player.pause()
+	if (to) player.value.play()
+	else player.value.pause()
 })
 
+const player = ref(null)
+const playerWrapper = ref(null)
+
+defineExpose({ player, playerWrapper })
+
 watch(segmentAbsolute, (to, from) => {
-	player.pause()
+	player.value.pause()
 	if (to[0] == from[0]) {
-		player.currentTime = to[1] - 1 
+		player.value.currentTime = to[1] - 1 
 	} else {
-		player.currentTime = to[0]
+		player.value.currentTime = to[0]
 	}
-	if (isPlaying.value) player.play()
+	if (isPlaying.value) player.value.play()
 })
 
 onMounted(() => {
-	player.addEventListener('timeupdate', e => {
-		if (player.currentTime > segmentAbsolute.value[1]) {
-			player.pause()
-			player.currentTime = segmentAbsolute.value[0]
-			player.play()
+	player.value.addEventListener('timeupdate', e => {
+		if (player.value.currentTime > segmentAbsolute.value[1]) {
+			player.value.pause()
+			player.value.currentTime = segmentAbsolute.value[0]
+			player.value.play()
 		}
 	})
 })
 
+function requestFullscreen(element) {
+	const requestMethod = element.requestFullScreen ||
+		element.webkitRequestFullScreen || element.mozRequestFullScreen ||
+		element.msRequestFullscreen
+
+	requestMethod.call(element)
+}
+function exitFullscreen() {
+	const exitMethod = document.exitFullscreen || document.webkitExitFullscreen ||
+		document.mozCancelFullscreen || document.msExitFullscreen
+	exitMethod.call(document)
+}
+
+const toggleFullscreen = () => {
+	if (!isFullscreen.value)
+		requestFullscreen(playerWrapper.value)
+	else
+		exitFullscreen()
+
+	isFullscreen.value = !isFullscreen.value
+
+}
 </script>
 
 <style lang="scss">
@@ -93,10 +123,12 @@ $text-shadow: 0px 0px 8px rgba($acc-color, 1);
 	width: 100%;
 	height: 100%;
 	z-index: -1;
+	display: flex;
+	align-items: center;
 }
 
 video#player {
-	min-height: 100%;
+	height: 100%;
 	width: 100%;
 	&.mirrored {
 		-moz-transform: scale(-1, 1);
@@ -105,6 +137,17 @@ video#player {
 		-ms-transform: scale(-1, 1);
 		transform: scale(-1, 1);
 	}
+}
+
+#top-buttons {
+	z-index: 1;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 1em;
 }
 
 #toolbar {
@@ -119,7 +162,8 @@ video#player {
 	#buttons {
 		display: flex;
 		width: 100%;
-		justify-content: space-evenly;
+		justify-content: space-between;
+		padding: 1em;
 	}
 	#sliders {
 		width: 100%;
@@ -143,26 +187,33 @@ video#player {
 	}
 }
 
-.toolbar-button {
+.ui-btn {
 	border: 0;
 	outline: 0;
 	background: 0;
-	font-size: 2.7em;
+	font-size: 2.3em;
 	color: white;
 	text-decoration: none;
-	padding: .3em;
+	padding: .2em;
 	margin: .2em;
 	border-radius: 50%;
 	cursor: pointer;
 
-	&:hover, &.active {
+	&.active {
 		background: rgba(0, 0, 0, 0.15);
 		background-blend-mode: lighten;
 	}
+
+	@media (hover: hover) {
+		&:hover {
+			background: rgba(0, 0, 0, 0.15);
+			background-blend-mode: lighten;
+		}
+	}
 }
 
-.toolbar-item {
-	* {
+.toolbar-item, .ui-btn {
+	&, * {
 		text-shadow: $text-shadow;
 	}
 }

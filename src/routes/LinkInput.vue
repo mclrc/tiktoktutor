@@ -3,14 +3,14 @@
 		<h1>Title</h1>
 		<p>Paste a TikTok link to get started</p>
 		<div id="input-wrapper">
-			<input type="text" id="link-input" @input="debounce(() => { ttlink = $event.target.value }, 1000)" placeholder="tiktok.com/..." />
+			<input type="text" id="link-input" :value="ttlink" @input="debounce(() => { ttlink = $event.target.value }, 1000)" placeholder="tiktok.com/..." />
 			<button id="paste-button" class="material-symbols-outlined" @click="paste">content_paste</button>
 			<router-link :to="'/' + CDNLink" id="arrow-button" :disabled="CDNLink == ''">
 				<span v-if="!loading" class="material-symbols-outlined">arrow_forward</span>
 				<span v-else class="spinner"></span>
 			</router-link>
 		</div>
-		<p v-if="message != ''" class="error">{{ message }}</p>
+		<p v-if="message != ''" class="error"><pre>{{ message }}</pre></p>
 	</div>
 </template>
 
@@ -43,7 +43,7 @@ watchEffect(async () => {
 
 	loading.value = false
 	if (!r) {
-		message.value = 'Couldn\'t find video. Are you sure this is a valid TikTok link?' 
+		message.value = 'Couldn\'t find video.\nAre you sure this is a valid TikTok link?' 
 		return
 	}
 	CDNLink.value = await r.text()
@@ -55,7 +55,7 @@ async function paste() {
 
 // Retry fetching link in case of rate limiting
 async function tryGetLink(depth = 2) {
-	const url = (import.meta.env.DEV ? 'http://localhost:9999/' : '') + `.netlify/functions/cors-bypass/?url=${ttlink.value}`
+	const url = (import.meta.env.DEV ? 'http://192.168.1.22:9999/' : '') + `.netlify/functions/cors-bypass/?url=${ttlink.value}`
 	const r = await fetch(url, {
 		method: 'POST',
 	})
@@ -134,6 +134,10 @@ button, a {
 	justify-content: center;
 	align-items: center;
 
+	&:hover {
+		background-: unset;
+	}
+
 	&:last-child {
 		color: white;
 		background-color: $acc-color;
@@ -175,5 +179,11 @@ button, a {
 
 p.error {
 	color: #b55;
+	padding: 0 2em;
+	pre {
+		margin: 0;
+		font-family: inherit;
+		text-align: center;
+	}
 }
 </style>
