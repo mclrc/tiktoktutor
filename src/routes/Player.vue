@@ -3,8 +3,9 @@
 		<span id="loading">Loading...</span>
 		<div id="top-buttons">
 			<button @click="router.go(-1)" class="material-symbols-outlined ui-btn">arrow_back</button>
-			<button @click="toggleFullscreen" class="material-symbols-outlined ui-btn">
+			<button @click="toggleFullscreen" class="material-symbols-outlined ui-btn" v-if="!isIPhone">
 				{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</button>
+			<div v-else></div>
 		</div>
 		<div id="toolbar">
 			<div id="sliders" @click="$event.stopPropagation()">
@@ -35,7 +36,7 @@
 			</div>
 		</div>
 		<video id="player" ref="player" playsinline
-			v-if="route.params.url != ''" :src="route.params.url"
+			v-if="route.params.url != ''" :src="route.params.url + '#t=0.1'"
 			:class="{ mirrored: mirrorVid }" @loadedmetadata="vidLength = $event.target.duration" loop :playbackRate="playbackSpeed"
 			preload="auto" />
 	</div>
@@ -46,6 +47,8 @@ import { ref, watch, onMounted, computed, watchEffect, defineExpose } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Slider from '@vueform/slider'
 import '@vueform/slider/themes/default.css'
+
+const isIPhone = !!navigator.platform && /iPhone/.test(navigator.platform)
 
 const router = useRouter()
 const route = useRoute()

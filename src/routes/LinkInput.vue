@@ -98,8 +98,8 @@ async function tryGetLink(depth = 2) {
 	display: flex;
 	width: 90vw;
 	margin: 0 auto;
+	//overflow: hidden;
 
-	overflow: hidden;
 
 	& > * {
 		font-size: 1rem;
@@ -134,17 +134,22 @@ button, a {
 	justify-content: center;
 	align-items: center;
 
+	margin-right: -2px;
+
 	&:hover {
-		background-: unset;
+		background-color: unset;
 	}
 
-	&:last-child {
+	&:last-child, &:last-child:active {
 		color: white;
 		background-color: $acc-color;
+		border-top-right-radius: 9999px;
+		border-bottom-right-radius: 9999px;
+		margin-right: -1px;
 	}
 
-	&[disabled="true"] {
-		opacity: .8 !important;
+	&:last-child[disabled="true"] {
+		background-color: $acc-color-2 !important;
 	}
 }
 
