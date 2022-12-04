@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;600;700&family=Inter:wght@200;300;500;900&display=swap');
+
+
 body, html {
 	background-color: black;
 	margin: 0;
@@ -12,6 +15,7 @@ body, html {
 }
 
 * {
+	font-family: Inter, sans-serif;
 	-webkit-tap-highlight-color: transparent;
 	box-sizing: border-box;
 }

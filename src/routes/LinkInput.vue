@@ -111,6 +111,8 @@ input {
 	outline: none;
 	background: none;
 
+	font-weight: 300;
+
 	display: inline-block;
 	width: 100%;
 	
@@ -150,6 +152,7 @@ button, a {
 
 	&:last-child[disabled="true"] {
 		background-color: $acc-color-2 !important;
+		cursor: normal;
 	}
 }
 
