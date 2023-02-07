@@ -45,6 +45,8 @@ async function getVidLink(url: string): string {
 
 	const [_a, match, ..._b] = html.match(/id="direct_dl_link" style=\"display\:none\"\s+href=\"(.+)\"/)
 	
+	console.log(match)
+	
 	return match
 }
 
