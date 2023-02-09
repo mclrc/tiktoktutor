@@ -11,6 +11,8 @@
   "dependencies": {
     "@netlify/functions": "^1.4.0",
     "@vueform/slider": "^2.1.5",
+    "fetch-with-proxy": "^3.0.1",
+    "global-agent": "^3.0.0",
     "node-fetch": "^3.3.0",
     "vue": "^3.2.41",
     "vue-router": "^4.0.13"

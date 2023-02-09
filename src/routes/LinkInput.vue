@@ -3,7 +3,7 @@
 		<h1>Title</h1>
 		<p>Paste a TikTok link to get started</p>
 		<div id="input-wrapper">
-			<input type="text" id="link-input" :value="ttlink" @input="debounce(() => { ttlink = $event.target.value }, 1000)" placeholder="tiktok.com/..." />
+			<input type="text" id="link-input" :value="ttlink" @input="debounce(() => { ttlink = ($event?.target as HTMLInputElement | null)?.value }, 1000)" placeholder="tiktok.com/..." />
 			<button id="paste-button" class="material-symbols-outlined" @click="paste">content_paste</button>
 			<router-link :to="'/' + CDNLink" id="arrow-button" :disabled="CDNLink == ''">
 				<span v-if="!loading" class="material-symbols-outlined">arrow_forward</span>
@@ -15,16 +15,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import {
+  ref,
+  watchEffect,
+} from 'vue';
 
-const ttlink = ref('')
+const ttlink = ref<string | undefined>('')
 const CDNLink = ref('')
 const loading = ref(false)
 const message = ref('')
 
 function createDebounce() {
-	let timout = null
-	return (fn, delay) => {
+	let timout: number | undefined = undefined
+	return (fn: () => void, delay: number) => {
 		clearTimeout(timout)
 		timout = setTimeout(fn, delay)
 	}
@@ -46,7 +49,7 @@ watchEffect(async () => {
 		message.value = 'Couldn\'t find video.\nAre you sure this is a valid TikTok link?' 
 		return
 	}
-	CDNLink.value = await r.text()
+	CDNLink.value = r
 })
 
 async function paste() {
@@ -54,8 +57,8 @@ async function paste() {
 }
 
 // Retry fetching link in case of rate limiting
-async function tryGetLink(depth = 2) {
-	const url = (import.meta.env.DEV ? 'http://192.168.1.22:9999/' : '') + `.netlify/functions/cdn-link/?url=${ttlink.value}`
+async function tryGetLink(depth = 2): Promise<string | null> {
+	const url = (import.meta.env.DEV ? 'http://localhost:9999/' : '') + `.netlify/functions/cdn-link/?url=${ttlink.value}`
 	const r = await fetch(url, {
 		method: 'POST',
 	})
@@ -66,10 +69,10 @@ async function tryGetLink(depth = 2) {
 			return null
 		}
 		else {
-			return await new Promise((res) => setTimeout(() => res(), 3000)).then(() => tryGetLink(depth - 1))
+			return await new Promise((res) => setTimeout(() => res(undefined), 3000)).then(() => tryGetLink(depth - 1))
 		}
 	}
-	return r
+	return await r.text()
 }
 </script>
 
