@@ -1,5 +1,5 @@
-import { bootstrap } from 'global-agent';
-import fetch from 'node-fetch';
+import { bootstrap } from "global-agent";
+import fetch from "node-fetch";
 
 bootstrap();
 
@@ -40,7 +40,7 @@ async function getVidLink(url: string) {
     },
     referrer: "https://ssstik.io/en",
     referrerPolicy: "strict-origin-when-cross-origin",
-    body: `id=${encodeURIComponent(url)}&locale=en&tt=RG0yV2hk`,
+    body: `id=${encodeURIComponent(url)}&locale=en&tt=dllaWFo0`,
     method: "POST",
     // @ts-ignore-next-line
     mode: "cors",
