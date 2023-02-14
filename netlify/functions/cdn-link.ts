@@ -40,7 +40,7 @@ async function getVidLink(url: string) {
     },
     referrer: "https://ssstik.io/en",
     referrerPolicy: "strict-origin-when-cross-origin",
-    body: `id=${encodeURIComponent(url)}&locale=en&tt=dllaWFo0`,
+    body: `id=${encodeURIComponent(url)}&locale=en&tt=dERCNUs1`,
     method: "POST",
     // @ts-ignore-next-line
     mode: "cors",
