@@ -1,11 +1,35 @@
-import { bootstrap } from "global-agent";
 import fetch from "node-fetch";
 
-bootstrap();
+async function getToken() {
+  const r = await fetch("https://ssstik.io/how-to-download-tiktok-video", {
+    headers: {
+      accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+      "accept-language": "en-US,en;q=0.9,de;q=0.8",
+      "sec-ch-ua":
+        '"Not_A Brand";v="99", "Google Chrome";v="109", "Chromium";v="109"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"macOS"',
+      "sec-fetch-dest": "document",
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-site": "none",
+      "sec-fetch-user": "?1",
+      "sec-gpc": "1",
+      "upgrade-insecure-requests": "1",
+      cookie: "__cflb=02DiuEcwseaiqqyPC5qqJA27ysjsZzMZ83NEcJxzR9rCb",
+    },
+    referrerPolicy: "strict-origin-when-cross-origin",
+    body: null,
+    method: "GET",
+  });
+  const html = await r.text();
 
-process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+  const token = /tt:'(.+)'/g.exec(html)?.[1] ?? null;
 
-async function getVidLink(url: string) {
+  return token;
+}
+
+async function getVidLink(url: string, token: string) {
   const userAgents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:53.0) Gecko/20100101 Firefox/53.0",
@@ -40,7 +64,7 @@ async function getVidLink(url: string) {
     },
     referrer: "https://ssstik.io/en",
     referrerPolicy: "strict-origin-when-cross-origin",
-    body: `id=${encodeURIComponent(url)}&locale=en&tt=bm91azE5`,
+    body: `id=${encodeURIComponent(url)}&locale=en&tt=${token}`,
     method: "POST",
     // @ts-ignore-next-line
     mode: "cors",
@@ -54,8 +78,6 @@ async function getVidLink(url: string) {
     html.match(
       /id="direct_dl_link" style=\"display\:none\"\s+href=\"(.+)\"/
     )?.[1] ?? null;
-
-  console.log(match);
 
   return match;
 }
@@ -75,7 +97,28 @@ const handler = async (event, _context) => {
   }
 
   try {
-    const directCdnUrl = await getVidLink(originalUrl);
+    const token = await getToken();
+    if (token === null) {
+      console.log("Failed to fetch token");
+      return {
+        statusCode: 500,
+        headers: { ...defaultHeaders },
+      };
+    }
+    console.log("Got token:", token);
+
+    const directCdnUrl = await getVidLink(originalUrl, token);
+    if (directCdnUrl === null) {
+      console.log(
+        `Failed to fetch direct link for video with url=${originalUrl}`
+      );
+      return {
+        statusCode: 500,
+        headers: { ...defaultHeaders },
+      };
+    }
+    console.log("Got direct link:", directCdnUrl);
+
     return {
       statusCode: 200,
       headers: { ...defaultHeaders },
