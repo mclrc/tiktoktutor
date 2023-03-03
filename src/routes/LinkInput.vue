@@ -99,7 +99,7 @@ async function tryGetLink(depth = 2): Promise<string | null> {
 	border-radius: 9999px;
 
 	display: flex;
-	width: 90vw;
+	width: 90%;
 	margin: 0 auto;
 	//overflow: hidden;
 
