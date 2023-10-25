@@ -210,6 +210,7 @@ $text-shadow: 0px 0px 8px rgba($acc-color, 1);
 #player-wrapper {
   height: 100%;
   position: relative;
+  max-width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
