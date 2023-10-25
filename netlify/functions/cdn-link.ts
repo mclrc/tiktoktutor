@@ -45,8 +45,7 @@ async function getVidLink(url: string, token: string) {
   const r = await fetch("https://ssstik.io/abc?url=dl", {
     headers: {
       accept: "*/*",
-      "user-agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
+      "user-agent": userAgents[Math.floor(Math.random() * userAgents.length)],
       "accept-language": "en-US,en;q=0.9,de;q=0.8",
       "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
       "hx-current-url": "https://ssstik.io/en",
@@ -76,7 +75,7 @@ async function getVidLink(url: string, token: string) {
 
   const match =
     html.match(
-      /id="direct_dl_link" style=\"display\:none\"\s+href=\"(.+)\"/
+      /<a href="(.+)"/
     )?.[1] ?? null;
 
   return match;
