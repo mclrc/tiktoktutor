@@ -1,6 +1,6 @@
 <template>
 	<div id="wrapper">
-		<h1>Title</h1>
+    <img id="logo" src="/logo.png" alt="logo" />
 		<p>Paste a TikTok link to get started</p>
 		<div id="input-wrapper">
 			<input type="text" id="link-input" :value="ttlink" @input="debounce(() => { ttlink = ($event?.target as HTMLInputElement | null)?.value }, 1000)" placeholder="tiktok.com/..." />
@@ -91,6 +91,10 @@ async function tryGetLink(depth = 2): Promise<string | null> {
 
 	color: white;
 	font-family: sans-serif;
+}
+
+#logo {
+  max-width: 80%;
 }
 
 #input-wrapper {
