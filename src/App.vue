@@ -20,7 +20,7 @@ window.addEventListener("resize", setVh);
 <style scoped lang="scss">
 #wrapper {
   position: relative;
-  height: 100vh;
+  height: calc(100 * var(--vh));
   width: auto;
   display: inline-block;
   max-width: 60vh;
