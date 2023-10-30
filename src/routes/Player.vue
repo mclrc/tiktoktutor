@@ -140,6 +140,7 @@ const isFullscreen = ref(false);
 const segmentAbsolute = ref([0, 10000000]);
 
 watch(isPlaying, (to, from) => {
+  console.log(player.value);
   if (to) player.value.play();
   else player.value.pause();
 });
