@@ -100,6 +100,7 @@
         loop
         :playbackRate="playbackSpeed"
         preload="auto"
+        @canplay="isPlaying = true"
       />
     </div>
   </div>
@@ -141,8 +142,8 @@ const segmentAbsolute = ref([0, 10000000]);
 
 watch(isPlaying, (to, from) => {
   console.log(player.value);
-  if (to) player.value.play();
-  else player.value.pause();
+  if (to) player.value?.play();
+  else player.value?.pause();
 });
 
 const container = ref(null);
@@ -157,7 +158,7 @@ watch(segmentAbsolute, (to, from) => {
   } else {
     player.value.currentTime = to[0];
   }
-  if (isPlaying.value) player.value.play();
+  if (isPlaying.value) player.value?.play();
 });
 
 onMounted(() => {
